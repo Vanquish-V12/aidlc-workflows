@@ -20,23 +20,23 @@
     "render-surface": "tui"
   },
   "counts": {
-    "total": 399,
+    "total": 401,
     "enumeratedByClass": {
-      "function": 189,
+      "function": 190,
       "audit": 68,
       "scope": 9,
       "stage": 32,
       "hook": 10,
-      "subcommand": 84,
+      "subcommand": 85,
       "render-surface": 7
     },
     "coveredByClass": {
-      "function": 80,
+      "function": 81,
       "audit": 29,
       "scope": 9,
       "stage": 8,
       "hook": 10,
-      "subcommand": 71,
+      "subcommand": 72,
       "render-surface": 7
     }
   },
@@ -2451,11 +2451,27 @@
     },
     {
       "unitClass": "function",
+      "unitId": "function:validateGrid",
+      "minMechanism": "none",
+      "coveredBy": [
+        {
+          "file": "tests/unit/t190-validate-grid.test.ts",
+          "mechanism": "cli"
+        }
+      ],
+      "status": "covered"
+    },
+    {
+      "unitClass": "function",
       "unitId": "function:validateScope",
       "minMechanism": "none",
       "coveredBy": [
         {
           "file": "tests/integration/t66.test.ts",
+          "mechanism": "cli"
+        },
+        {
+          "file": "tests/unit/t190-validate-grid.test.ts",
           "mechanism": "cli"
         }
       ],
@@ -3644,6 +3660,18 @@
       "coveredBy": [
         {
           "file": "tests/integration/t128-custom-runner.test.ts",
+          "mechanism": "cli"
+        }
+      ],
+      "status": "covered"
+    },
+    {
+      "unitClass": "subcommand",
+      "unitId": "aidlc-graph validate-grid",
+      "minMechanism": "cli",
+      "coveredBy": [
+        {
+          "file": "tests/unit/t190-validate-grid.test.ts",
           "mechanism": "cli"
         }
       ],

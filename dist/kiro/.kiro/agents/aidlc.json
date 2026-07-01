@@ -37,7 +37,8 @@
     "subagent": {
       "trustedAgents": [
         "aidlc-developer-agent",
-        "aidlc-architect-agent"
+        "aidlc-architect-agent",
+        "aidlc-composer-agent"
       ]
     }
   },

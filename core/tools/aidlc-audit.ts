@@ -15,7 +15,7 @@ import {
   worktreePath,
 } from "./aidlc-lib.ts";
 
-// --- Canonical event types (68) ---
+// --- Canonical event types (69) ---
 // See docs/reference/12-state-machine.md for the state transitions that emit each event.
 
 const VALID_EVENT_TYPES = new Set([
@@ -62,6 +62,9 @@ const VALID_EVENT_TYPES = new Set([
   "SCOPE_CHANGED",
   "DEPTH_CHANGED",
   "TEST_STRATEGY_CHANGED",
+  // Adaptive composer: an in-flight plan re-shape (pending-stage suffix flips
+  // via the recompose verb). Emitted by aidlc-utility.ts handleRecompose.
+  "RECOMPOSED",
   // Jump events owned by STAGE_JUMPED — JUMP_COMPLETED was deleted as a
   // redundant alias.
   // Error/Recovery
@@ -152,6 +155,7 @@ const EVENT_HEADINGS: Record<string, string> = {
   SCOPE_CHANGED: "Scope Change",
   DEPTH_CHANGED: "Depth Change",
   TEST_STRATEGY_CHANGED: "Test Strategy Change",
+  RECOMPOSED: "Plan Recomposed",
   ERROR_LOGGED: "Error Logged",
   RECOVERY_COMPLETED: "Recovery Completed",
   BOLT_STARTED: "Bolt Started",

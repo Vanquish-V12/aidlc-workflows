@@ -20,23 +20,23 @@
     "render-surface": "tui"
   },
   "counts": {
-    "total": 401,
+    "total": 404,
     "enumeratedByClass": {
-      "function": 190,
-      "audit": 68,
+      "function": 191,
+      "audit": 69,
       "scope": 9,
       "stage": 32,
       "hook": 10,
-      "subcommand": 85,
+      "subcommand": 86,
       "render-surface": 7
     },
     "coveredByClass": {
-      "function": 81,
-      "audit": 29,
+      "function": 82,
+      "audit": 30,
       "scope": 9,
       "stage": 8,
       "hook": 10,
-      "subcommand": 72,
+      "subcommand": 73,
       "render-surface": 7
     }
   },
@@ -296,6 +296,18 @@
       "minMechanism": "none",
       "coveredBy": [],
       "status": "UNCOVERED"
+    },
+    {
+      "unitClass": "audit",
+      "unitId": "RECOMPOSED",
+      "minMechanism": "none",
+      "coveredBy": [
+        {
+          "file": "tests/unit/t194-recompose.test.ts",
+          "mechanism": "cli"
+        }
+      ],
+      "status": "covered"
     },
     {
       "unitClass": "audit",
@@ -2268,6 +2280,18 @@
     },
     {
       "unitClass": "function",
+      "unitId": "function:setStageSuffix",
+      "minMechanism": "none",
+      "coveredBy": [
+        {
+          "file": "tests/unit/t194-recompose.test.ts",
+          "mechanism": "cli"
+        }
+      ],
+      "status": "covered"
+    },
+    {
+      "unitClass": "function",
       "unitId": "function:SLUG_TAG_REGEX",
       "minMechanism": "none",
       "coveredBy": [],
@@ -2793,6 +2817,10 @@
         {
           "file": "tests/integration/t187-park-conversational.sdk.test.ts",
           "mechanism": "sdk"
+        },
+        {
+          "file": "tests/integration/t195-stop-hook-compose-carveout.test.ts",
+          "mechanism": "cli"
         }
       ],
       "status": "covered"
@@ -4501,6 +4529,22 @@
         },
         {
           "file": "tests/unit/t191-composed-scope-write.test.ts",
+          "mechanism": "cli"
+        }
+      ],
+      "status": "covered"
+    },
+    {
+      "unitClass": "subcommand",
+      "unitId": "aidlc-utility recompose",
+      "minMechanism": "cli",
+      "coveredBy": [
+        {
+          "file": "tests/integration/t196-compose-inflight.sdk.test.ts",
+          "mechanism": "sdk"
+        },
+        {
+          "file": "tests/unit/t194-recompose.test.ts",
           "mechanism": "cli"
         }
       ],

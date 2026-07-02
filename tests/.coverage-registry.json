@@ -20,9 +20,9 @@
     "render-surface": "tui"
   },
   "counts": {
-    "total": 404,
+    "total": 405,
     "enumeratedByClass": {
-      "function": 191,
+      "function": 192,
       "audit": 69,
       "scope": 9,
       "stage": 32,
@@ -1457,6 +1457,13 @@
     {
       "unitClass": "function",
       "unitId": "function:isValidRepoName",
+      "minMechanism": "none",
+      "coveredBy": [],
+      "status": "UNCOVERED"
+    },
+    {
+      "unitClass": "function",
+      "unitId": "function:keywordCollisions",
       "minMechanism": "none",
       "coveredBy": [],
       "status": "UNCOVERED"
@@ -4541,6 +4548,10 @@
       "coveredBy": [
         {
           "file": "tests/integration/t196-compose-inflight.sdk.test.ts",
+          "mechanism": "sdk"
+        },
+        {
+          "file": "tests/integration/t197-compose-chat-inflight.sdk.test.ts",
           "mechanism": "sdk"
         },
         {

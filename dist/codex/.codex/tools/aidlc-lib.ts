@@ -2885,10 +2885,17 @@ export function validScopes(): ReadonlySet<string> {
   return _validScopes;
 }
 
-// Agent metadata derived from `.claude/agents/*.md` frontmatter. Adding a
-// new agent means dropping in an `.md` file with the required fields; the
+// Agent metadata derived from `.claude/agents/aidlc-*.md` frontmatter. Adding a
+// new agent means dropping in an `aidlc-*.md` file with the required fields; the
 // loader discovers it at next invocation. Sorted alphabetically by slug
 // so readdirSync order is platform-independent.
+//
+// Namespace guard: the loader considers ONLY `aidlc-`-prefixed files. When AIDLC
+// is installed into a host repo that already keeps its own agents in
+// `.claude/agents/` (a common Claude Code convention), those foreign agents use a
+// different frontmatter schema and would otherwise throw here (and poison the
+// orchestrator's persona roster). Scoping to the `aidlc-` prefix lets the two
+// agent sets coexist in one directory.
 
 export interface AgentMetadata {
   slug: string;
@@ -2902,7 +2909,7 @@ let _agents: AgentMetadata[] | null = null;
 
 export function loadAgents(): AgentMetadata[] {
   if (!_agents) {
-    const files = readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md"));
+    const files = readdirSync(AGENTS_DIR).filter((f) => f.startsWith("aidlc-") && f.endsWith(".md"));
     _agents = files
       .map((f) => parseAgentFrontmatter(join(AGENTS_DIR, f)))
       .sort((a, b) => a.slug.localeCompare(b.slug));

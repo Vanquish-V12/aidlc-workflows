@@ -354,6 +354,14 @@ function compile(opts: CompileOptions): { skipped?: string; written?: string } {
   const stages: RuntimeStage[] = [];
   const zeroEntryApprovedStages: { slug: string; completed_at: string }[] = [];
 
+  // The relative per-intent record dir (aidlc/spaces/<sp>/intents/<slug>-<id8>).
+  // MUST be passed to relativeMemoryPath: without it the helper falls back to the
+  // bare space prefix (aidlc/spaces/<sp>/intents) and DROPS the record segment,
+  // so every row's memory_path points at a non-existent file and the §13
+  // learnings surface (aidlc-learnings.ts joins projectDir + this path) silently
+  // reads nothing. null (no active intent) is handled by the helper's fallback.
+  const recordPrefix = relativeRecordDir(projectDir);
+
   for (const [slug, entry] of slugsByStartTime) {
     const phaseInfo = phaseMap.get(slug);
     if (!phaseInfo) continue; // unknown slug — skip rather than fail
@@ -367,7 +375,7 @@ function compile(opts: CompileOptions): { skipped?: string; written?: string } {
       started_at: entry.started_at,
       completed_at: entry.completed_at,
       agent: entry.agent || phaseInfo.agent,
-      memory_path: relativeMemoryPath(phaseInfo.phase, slug),
+      memory_path: relativeMemoryPath(phaseInfo.phase, slug, recordPrefix),
       memory_entries: memory.memory_entries,
       memory_breakdown: memory.memory_breakdown,
       sensor_firings: [],

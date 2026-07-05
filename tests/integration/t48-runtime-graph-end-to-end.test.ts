@@ -52,6 +52,16 @@
 //   .sh test 9  (no MEMORY_EMPTY emitted — file absent)                -> test 9
 //   .sh test 10 (re-compile byte-equivalent runtime-graph.json)        -> test 10
 //
+// NEW (beyond the .sh) — test 11: regression guard that every row's memory_path
+// carries the per-intent <record> segment. compile() once called
+// relativeMemoryPath(phase, slug) WITHOUT the recordPrefix, so the helper fell
+// back to the bare space prefix (aidlc/spaces/<sp>/intents) and DROPPED the
+// <slug>-<id8> record dir — every memory_path then pointed at a non-existent
+// file and the §13 learnings surface (aidlc-learnings.ts joins projectDir +
+// memory_path) silently read nothing for the entire intent. The row shape
+// (required-sections/schema) still passed, so only a path-value assertion
+// catches it — hence this case.
+//
 // Strengthenings over the .sh's jq/grep greps (noted inline): test 2 asserts
 // each of the four header keys is present AND non-empty (not just `has()`);
 // test 8 also pins that memory_entries is the JSON null, not the string
@@ -79,6 +89,7 @@ interface RuntimeStageRow {
   started_at: string | null;
   completed_at: string | null;
   memory_entries: number | null;
+  memory_path: string;
   outcome: "approved" | "failed" | "pending";
 }
 interface RuntimeGraphShape {
@@ -120,6 +131,18 @@ const graphPathOf = (p: string): string =>
   join(recordDirOf(p), "runtime-graph.json");
 const statePathOf = (p: string): string =>
   join(recordDirOf(p), "aidlc-state.md");
+// The RELATIVE per-intent record dir (aidlc/spaces/<space>/intents/<record>),
+// forward-slash — the prefix a well-formed row.memory_path must start with.
+// Mirrors recordDirOf but returns the workspace-relative form the graph stores.
+function relRecordDirOf(p: string): string {
+  const spaceCursor = join(p, "aidlc", "active-space");
+  const space = existsSync(spaceCursor)
+    ? readFileSync(spaceCursor, "utf-8").trim() || "default"
+    : "default";
+  const intentsDir = join(p, "aidlc", "spaces", space, "intents");
+  const rec = readFileSync(join(intentsDir, "active-intent"), "utf-8").trim();
+  return `aidlc/spaces/${space}/intents/${rec}`;
+}
 // Audit is sharded under <record>/audit/<host>-<pid>.md; concat every shard for
 // a content read, falling back to the flat audit.md for a not-yet-born project.
 function readAudit(p: string): string {
@@ -312,5 +335,27 @@ describe("t48 runtime-graph compile end-to-end (migrated from t48-runtime-graph-
     // which catches a whitespace-only equality that masks a value change).
     expect(rawAfterRecompile).toBe(rawBeforeRecompile);
     expect(JSON.parse(rawAfterRecompile)).toEqual(JSON.parse(rawBeforeRecompile));
+  });
+
+  test("11: every row's memory_path carries the per-intent record dir (regression) [new]", () => {
+    // REGRESSION GUARD (not in the .sh). compile() once wrote memory_path via
+    // relativeMemoryPath(phase, slug) WITHOUT the recordPrefix arg, so the helper
+    // fell back to the bare space prefix (aidlc/spaces/<sp>/intents) and DROPPED
+    // the <record> segment — every row pointed at a non-existent file and the §13
+    // learnings surface (aidlc-learnings.ts joins projectDir + memory_path) read
+    // nothing for the whole intent. Assert the record segment is present.
+    const relRecord = relRecordDirOf(proj); // aidlc/spaces/<sp>/intents/<record>
+    const recordAbs = recordDirOf(proj);
+    expect(graphAfterApprove.stages.length).toBeGreaterThan(0);
+    for (const row of graphAfterApprove.stages) {
+      // (a) carries the FULL per-intent record prefix. The exact bug dropped the
+      //     <record> dir, leaving the bare `intents/<phase>/…` form — forbidden.
+      expect(row.memory_path.startsWith(`${relRecord}/`)).toBe(true);
+      // (b) still ends at the stage's own diary file.
+      expect(row.memory_path.endsWith(`/${row.stage_slug}/memory.md`)).toBe(true);
+      // (c) end-to-end: joined with projectDir it lands INSIDE the record dir
+      //     (where aidlc-learnings.ts would actually read it), not a sibling.
+      expect(join(proj, row.memory_path).startsWith(`${recordAbs}/`)).toBe(true);
+    }
   });
 });

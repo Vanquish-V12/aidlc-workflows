@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.6] - 2026-07-05
+
+Fixes the runtime-graph `memory_path` so the §13 learnings ritual can find each stage's diary. `aidlc-runtime compile` built every stage row's `memory_path` by calling `relativeMemoryPath(phase, slug)` **without** the record-dir prefix, so the helper fell back to the bare space prefix (`aidlc/spaces/<space>/intents`) and dropped the per-intent `<slug>-<id8>` record segment. Every row's `memory_path` then pointed at a non-existent file, and `aidlc-learnings.ts surface` — which joins `projectDir` + `memory_path` — silently returned zero candidates for every stage, so the learnings-capture ritual was a no-op across the whole workflow. The `next` directive path was always correct (it passes the prefix via `memoryPathFor`), which is why the two disagreed. `compile()` now threads `relativeRecordDir(...)`, and a new t48 case asserts every compiled row's `memory_path` carries the record segment (it fails against the pre-fix code and passes after). (The `aidlc-state advance` stdout `memory_path` deliberately stays on the bare space prefix per P9 and is unchanged — it is informational and not read for the diary path; t100 pins that behaviour.)
+
+* `core/tools/aidlc-runtime.ts` — `compile()` resolves `recordPrefix = relativeRecordDir(projectDir)` once and threads it into `relativeMemoryPath(phaseInfo.phase, slug, recordPrefix)`.
+* `tests/integration/t48-runtime-graph-end-to-end.test.ts` — new case 11 asserts every row's `memory_path` starts with the per-intent record dir and, joined with the project dir, resolves inside the record (where `aidlc-learnings.ts` reads it).
+
 ## [2.1.5] - 2026-07-01
 
 Extends the 1M-context window to tier-pinned subagents, not just the orchestrator. The shipped `.claude/settings.json` already ran the orchestrator at `opus[1m]`, but the `ANTHROPIC_DEFAULT_*_MODEL` Bedrock pins carried bare model IDs, so a subagent selected by tier (the agent roster's `opus`/`sonnet` overrides, or any `sonnet`/`fable` usage that does not go through the `opus[1m]` alias) ran at 200K. The Fable, Opus, and Sonnet pins now carry the `[1m]` suffix so every use of those aliases gets the 1M window; Claude Code strips the suffix before the model ID reaches Bedrock, and the suffix is idempotent with the existing `opus[1m]` orchestrator pin. Haiku is left bare (Haiku 4.5 is a 200K model with no 1M variant). **Upgrade:** re-copy your `dist/claude/.claude/` shell into the project, or append `[1m]` to `ANTHROPIC_DEFAULT_OPUS_MODEL` / `ANTHROPIC_DEFAULT_SONNET_MODEL` / `ANTHROPIC_DEFAULT_FABLE_MODEL` in your own `settings.json` / `settings.local.json`. The 1M-context window requires Bedrock model access for those models.

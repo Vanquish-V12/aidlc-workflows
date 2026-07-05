@@ -117,6 +117,12 @@ function readAudit(p: string): string {
 function state(args: string[]): void {
   const r = spawnSync(BUN, [STATE, ...args, "--project-dir", proj], {
     encoding: "utf-8",
+    // Hermetic guard-skip: drives gate-start/reject/revise/approve against a
+    // bare fixture with no seeded produces[] artifacts, so the artifact-existence
+    // guard (aidlc-state.ts verifyStageArtifacts) would refuse the approve.
+    // run-tests.ts sets this globally (:481); setting it here makes a bare
+    // `bun test <file>` pass too (the guard is covered on its own by t185).
+    env: { ...process.env, AIDLC_SKIP_ARTIFACT_GUARD: "1" },
   });
   expect(
     r.status,

@@ -118,6 +118,11 @@ function walkStage(proj: string, slug: string): void {
   }
   const ap = spawnSync(BUN, [STATE, "approve", slug, "--user-input", "approve", "--project-dir", proj], {
     encoding: "utf-8",
+    // Hermetic guard-skip: approve completes a bare-fixture stage with no seeded
+    // produces[] artifacts, which the artifact-existence guard would refuse.
+    // run-tests.ts sets this globally (:481); set it here so a bare
+    // `bun test <file>` passes too (the guard is covered on its own by t185).
+    env: { ...process.env, AIDLC_SKIP_ARTIFACT_GUARD: "1" },
   });
   if ((ap.status ?? -1) !== 0) {
     throw new Error(`approve ${slug} failed (status ${ap.status}): ${ap.stdout ?? ""}${ap.stderr ?? ""}`);

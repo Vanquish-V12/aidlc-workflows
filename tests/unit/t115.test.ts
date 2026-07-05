@@ -122,6 +122,11 @@ interface CliResult {
 function orchestrate(args: string[], p: string): CliResult {
   const res = spawnSync(BUN, [ORCH_TOOL, ...args, "--project-dir", p], {
     encoding: "utf-8",
+    // Hermetic guard-skip: report auto-advances and completes bare-fixture stages
+    // with no seeded produces[] artifacts (see the state() helper below for the
+    // full rationale). run-tests.ts sets this globally (:481); set it here so a
+    // bare `bun test <file>` passes too (guard covered on its own by t185).
+    env: { ...process.env, AIDLC_SKIP_ARTIFACT_GUARD: "1" },
   });
   const stdout = res.stdout ?? "";
   return { status: res.status ?? -1, out: `${stdout}${res.stderr ?? ""}`, stdout };
@@ -131,6 +136,12 @@ function orchestrate(args: string[], p: string): CliResult {
 function state(args: string[], p: string): CliResult {
   const res = spawnSync(BUN, [STATE_TOOL, ...args, "--project-dir", p], {
     encoding: "utf-8",
+    // Hermetic guard-skip: advance/approve complete bare-fixture stages with no
+    // seeded produces[] artifacts, so the artifact-existence guard
+    // (aidlc-state.ts verifyStageArtifacts) would refuse them. run-tests.ts sets
+    // this globally (:481); set it here so a bare `bun test <file>` passes too
+    // (the guard is covered on its own by t185).
+    env: { ...process.env, AIDLC_SKIP_ARTIFACT_GUARD: "1" },
   });
   const stdout = res.stdout ?? "";
   return { status: res.status ?? -1, out: `${stdout}${res.stderr ?? ""}`, stdout };

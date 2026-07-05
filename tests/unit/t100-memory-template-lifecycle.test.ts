@@ -253,6 +253,13 @@ function midIdeationProject(): string {
 function runState(proj: string, args: string[]): { out: string; status: number } {
   const res = spawnSync(BUN, [TOOL, ...args, "--project-dir", proj], {
     encoding: "utf-8",
+    // Hermetic guard-skip: cases 14-16 drive advance/approve against a bare
+    // state fixture with no seeded produces[] artifacts, so the artifact-existence
+    // guard (aidlc-state.ts verifyStageArtifacts) would refuse the advance.
+    // run-tests.ts sets AIDLC_SKIP_ARTIFACT_GUARD=1 globally (:481); setting it
+    // here too makes the file pass under a bare `bun test <file>` as well (the
+    // guard has its own coverage in t185).
+    env: { ...process.env, AIDLC_SKIP_ARTIFACT_GUARD: "1" },
   });
   return {
     out: `${res.stdout ?? ""}${res.stderr ?? ""}`,

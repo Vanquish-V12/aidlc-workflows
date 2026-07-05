@@ -174,7 +174,14 @@ function run(
 ): { status: number; out: string } {
   const r = spawnSync(BUN, [tool, ...args], {
     encoding: "utf-8",
-    env: { ...process.env, ...env },
+    // Hermetic guard-skip: these spawns drive stage transitions (gate-start /
+    // approve) against a bare fixture with NO seeded produces[] artifacts, so the
+    // artifact-existence guard (aidlc-state.ts verifyStageArtifacts) would refuse
+    // the approve. run-tests.ts sets AIDLC_SKIP_ARTIFACT_GUARD=1 globally (:481)
+    // for exactly this synthetic-transition tier; setting it here too makes the
+    // file pass under a bare `bun test <file>` as well (the guard is exercised on
+    // its own in t185). A per-call `env` still overrides if a case needs it ON.
+    env: { ...process.env, AIDLC_SKIP_ARTIFACT_GUARD: "1", ...env },
   });
   return {
     status: r.status ?? -1,

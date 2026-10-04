@@ -2022,7 +2022,12 @@ function namingMismatches(
 ): NamingMismatch[] {
   if (!existsSync(dir)) return [];
   const mismatches: NamingMismatch[] = [];
-  for (const f of readdirSync(dir).filter((name) => name.endsWith(".md")).sort()) {
+  // Agent namespace guard (speakstudio preset): mirror loadAgents() and check
+  // only `aidlc-`-prefixed agent files, so a host repo's own `.claude/agents/`
+  // (README.md, agents with a different frontmatter schema) cannot fail doctor.
+  const inScope = (name: string) =>
+    name.endsWith(".md") && (kind !== "Agent" || name.startsWith("aidlc-"));
+  for (const f of readdirSync(dir).filter(inScope).sort()) {
     const filePath = join(dir, f);
     if (!statSync(filePath).isFile()) continue;
     const { name, plugin } = frontmatterFields(filePath, kind);

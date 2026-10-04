@@ -29004,8 +29004,14 @@ export function loadAgents(): AgentMetadata[] {
     const dir = agentsDir();
     const slugToFile = new Map<string, string>();
     const agents: AgentMetadata[] = [];
+    // Namespace guard (speakstudio preset): consider ONLY `aidlc-`-prefixed
+    // files. When AI-DLC is installed into a host repo that already keeps its
+    // own agents in `.claude/agents/` (a common Claude Code convention), those
+    // foreign agents use a different frontmatter schema and would otherwise
+    // throw here and poison the orchestrator's persona roster. Scoping to the
+    // `aidlc-` prefix lets the two agent sets coexist in one directory.
     const files = readdirSync(dir)
-      .filter((f) => f.endsWith(".md") && f !== "aidlc.md")
+      .filter((f) => f.startsWith("aidlc-") && f.endsWith(".md") && f !== "aidlc.md")
       .sort();
     for (const f of files) {
       const filePath = join(dir, f);
